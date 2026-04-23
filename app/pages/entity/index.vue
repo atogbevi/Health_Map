@@ -1,5 +1,5 @@
 <template>
     <div>
-       <HeroSection />
+        <EntitiesCount/>
     </div>
 </template>

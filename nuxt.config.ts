@@ -1,8 +1,19 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcss from '@tailwindcss/vite'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: [
-    '@nuxtjs/tailwindcss',
-  ],
+  modules: ['@nuxt/ui', '@nuxt/icon'],
+  css: ['~/assets/main.css'],
+  vite: {
+    plugins: [
+      tailwindcss()
+    ]
+  },
+
+  colorMode: {
+    classSuffix: ''     
+  },
+  
 })
