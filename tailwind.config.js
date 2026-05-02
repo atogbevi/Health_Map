@@ -1,6 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
+    "./app/**/*.{js,vue,ts}",
     "./components/**/*.{js,vue,ts}",
     "./layouts/**/*.vue",
     "./pages/**/*.vue",
@@ -13,6 +15,9 @@ export default {
       fontFamily: {
         sans: ['Be Vietnam Pro', 'sans-serif'],
       },
+
+      colors: {
+      }
     },
   },
   plugins: [],

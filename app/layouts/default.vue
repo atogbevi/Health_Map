@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen bg-zinc-50 dark:bg-stone-900">
+    <div class="min-h-screen bg-(--color-background) text-(--color-text) transition-colors duration-300">
         <Header />
         <main>
             <slot />
