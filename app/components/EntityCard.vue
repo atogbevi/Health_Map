@@ -1,5 +1,6 @@
 <script setup lang="ts">
     const props = defineProps({
+        id: Number,
         category: String,
         name: String,
         description: String,
@@ -25,7 +26,9 @@
                 {{ props.location }}
             </p>
         </div>
-        <button class="text-primary font-bold text-sm mt-4 text-left">Details</button>
+        <NuxtLink :to="`/entity/${props.id}`" class="text-primary font-bold text-sm mt-4 text-left">
+            Details
+        </NuxtLink>
     </div>
 
 </template>

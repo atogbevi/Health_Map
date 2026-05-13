@@ -51,6 +51,7 @@
                 <EntityCard
                     v-for="entity in entities"
                     :key="entity.id"
+                    :id="entity.id"
                     :name="entity.name"
                     :category="entity.category"
                     :description="entity.description"
