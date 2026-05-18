@@ -1,25 +1,69 @@
 <script setup>
+
+    import { createClient } from '@supabase/supabase-js'
+    const config = useRuntimeConfig()
+    const supabase = createClient(
+    config.public.supabaseUrl,
+    config.public.supabaseKey,
+    )
+
+    const stats = {
+    pharmacies: 0,
+    centres_de_sante: 0,
+    institutions: 0,
+    health_tech: 0
+    }
+
+    stats.pharmacies = (
+    await supabase
+        .from('entities')
+        .select('*', { count: 'exact', head: true })
+        .eq('categorie', 'pharmacie')
+    ).count
+
+    stats.centres_de_sante = (
+        await supabase
+        .from('entities')
+        .select('*', { count: 'exact', head: true })
+        .eq('categorie', 'clinique', 'hopital')
+    ).count
+
+    stats.institutions = (
+        await supabase
+        .from('entities')
+        .select('*', { count: 'exact', head: true })
+        .eq('categorie', 'institution')
+    ).count
+    
+    stats.health_tech = (
+        await supabase
+        .from('entities')
+        .select('*', { count: 'exact', head: true })
+        .eq('categorie', 'startup')
+    ).count
+
+
     const entitiesCount = [
         {
             id: 1,
             name: 'Pharmacies',
-            count: 350,
+            count: stats.pharmacies,
             icon: 'mdi-pharmacy',
             color: '#155dfc',
-            description: 'lieux'
+            description: 'pharmacies'
         },
         {
             id: 2,
             name: 'Centres de santé',
-            count: 200,
+            count: stats.centres_de_sante,
             icon: 'mdi-hospital-building',
             color: '#016630',
-            description: 'lieux'
+            description: 'centres de santé'
         },
         {
             id: 3,
             name: 'Institutions',
-            count: 20,
+            count: stats.institutions,
             icon: 'mdi-building',
             color: '#9810fa',
             description: 'institutions publiques'
@@ -27,7 +71,7 @@
         {
             id: 4,
             name: 'Health Tech',
-            count: 40,
+            count: stats.health_tech,
             icon: 'mdi-robot',
             color: '#ff6900',
             description: 'startups'
