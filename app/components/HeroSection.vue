@@ -5,8 +5,9 @@
             <p class="lg:text-xl">Our mission is to democratize healthcare visibility. HealthMap is your centralized directory to discover, compare, and connect with trusted providers and innovative health-tech startups in your area.</p>
         </div>
         <div class="flex gap-8">
-            <NuxtLink href="/entity" class="text-white bg-[color:var(--color-primary)] rounded-lg p-3 text-md cursor-pointer">Explore Entities</NuxtLink>
-            <NuxtLink href="/dashboard" class=" text-white bg-[color:var(--color-primary)] rounded-lg p-3 text-md cursor-pointer">Discover Analytics</NuxtLink>
+            <NuxtLink href="/entity" class="text-white bg-(--color-primary) rounded-lg p-3 text-md cursor-pointer">Explore Entities</NuxtLink>
+            <NuxtLink href="/dashboard" class=" text-white bg-(--color-primary) rounded-lg p-3 text-md cursor-pointer">Discover Analytics</NuxtLink>
         </div>
     </div>
 </template>
+
