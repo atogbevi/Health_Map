@@ -1,51 +1,19 @@
 <script setup>
+    import { getStats } from '~/composables/getStats'
 
-    import { createClient } from '@supabase/supabase-js'
-    const config = useRuntimeConfig()
-    const supabase = createClient(
-    config.public.supabaseUrl,
-    config.public.supabaseKey,
-    )
-
-    const stats = {
-    pharmacies: 0,
-    centres_de_sante: 0,
-    institutions: 0,
-    health_tech: 0
-    }
-
-    stats.pharmacies = (
-    await supabase
-        .from('entities')
-        .select('*', { count: 'exact', head: true })
-        .eq('categorie', 'pharmacie')
-    ).count
-
-    stats.centres_de_sante = (
-        await supabase
-        .from('entities')
-        .select('*', { count: 'exact', head: true })
-        .eq('categorie', 'clinique', 'hopital')
-    ).count
-
-    stats.institutions = (
-        await supabase
-        .from('entities')
-        .select('*', { count: 'exact', head: true })
-        .eq('categorie', 'institution')
-    ).count
-    
-    stats.health_tech = (
-        await supabase
-        .from('entities')
-        .select('*', { count: 'exact', head: true })
-        .eq('categorie', 'startup')
-    ).count
-
+    const stats = await getStats()
 
     const entitiesCount = [
         {
             id: 1,
+            name: 'Total',
+            count: stats.total,
+            icon: 'mdi-database',
+            color: '#6b7280',
+            description: 'entités enregistrées'
+        },
+        {
+            id: 2,
             name: 'Pharmacies',
             count: stats.pharmacies,
             icon: 'mdi-pharmacy',
@@ -53,7 +21,7 @@
             description: 'pharmacies'
         },
         {
-            id: 2,
+            id: 3,
             name: 'Centres de santé',
             count: stats.centres_de_sante,
             icon: 'mdi-hospital-building',
@@ -61,7 +29,7 @@
             description: 'centres de santé'
         },
         {
-            id: 3,
+            id: 4,
             name: 'Institutions',
             count: stats.institutions,
             icon: 'mdi-building',
@@ -69,7 +37,7 @@
             description: 'institutions publiques'
         },
         {
-            id: 4,
+            id: 5,
             name: 'Health Tech',
             count: stats.health_tech,
             icon: 'mdi-robot',
@@ -87,7 +55,7 @@
 </script>
 
 <template>
-    <div class="flex flex-wrap gap-10 mx-auto py-12 px-6 lg:px-12">
+    <section class="flex flex-wrap gap-10 px-6 lg:px-12">
         <div 
             v-for="entity in entitiesCount " :key="entity.id" 
             class ="flex-1 flex-col p-7 rounded-xl shadow-xs bg-white dark:bg-gray-800 hover:scale-105 transition ease-in-out duration-500">
@@ -105,5 +73,5 @@
                 <p>{{ entity.count }} {{ entity.description }}</p>
             </div>
         </div>
-    </div>
+    </section>
 </template>
