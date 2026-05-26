@@ -1,109 +1,88 @@
 <script setup>
+import { getStats } from '~/composables/getStats'
 
-    import { createClient } from '@supabase/supabase-js'
-    const config = useRuntimeConfig()
-    const supabase = createClient(
-    config.public.supabaseUrl,
-    config.public.supabaseKey,
-    )
+const stats = await getStats()
 
-    const stats = {
-    pharmacies: 0,
-    centres_de_sante: 0,
-    institutions: 0,
-    health_tech: 0
-    }
+const entitiesCount = [
+  {
+    id: 1,
+    name: 'Total',
+    count: stats.total,
+    icon: 'mdi:database-outline',
+    color: '#64748b',
+    description: 'entités enregistrées',
+  },
+  {
+    id: 2,
+    name: 'Pharmacies',
+    count: stats.pharmacies,
+    icon: 'mdi:pharmacy',
+    color: '#2563eb',
+    description: 'pharmacies',
+  },
+  {
+    id: 3,
+    name: 'Centres de santé',
+    count: stats.centres_de_sante,
+    icon: 'mdi:hospital-building',
+    color: '#059669',
+    description: 'centres de santé',
+  },
+  {
+    id: 4,
+    name: 'Institutions',
+    count: stats.institutions,
+    icon: 'mdi:office-building',
+    color: '#7c3aed',
+    description: 'institutions publiques',
+  },
+  {
+    id: 5,
+    name: 'Health Tech',
+    count: stats.health_tech,
+    icon: 'mdi:robot-outline',
+    color: '#ea580c',
+    description: 'startups',
+  },
+]
 
-    stats.pharmacies = (
-    await supabase
-        .from('entities')
-        .select('*', { count: 'exact', head: true })
-        .eq('categorie', 'pharmacie')
-    ).count
-
-    stats.centres_de_sante = (
-        await supabase
-        .from('entities')
-        .select('*', { count: 'exact', head: true })
-        .eq('categorie', 'clinique', 'hopital')
-    ).count
-
-    stats.institutions = (
-        await supabase
-        .from('entities')
-        .select('*', { count: 'exact', head: true })
-        .eq('categorie', 'institution')
-    ).count
-    
-    stats.health_tech = (
-        await supabase
-        .from('entities')
-        .select('*', { count: 'exact', head: true })
-        .eq('categorie', 'startup')
-    ).count
-
-
-    const entitiesCount = [
-        {
-            id: 1,
-            name: 'Pharmacies',
-            count: stats.pharmacies,
-            icon: 'mdi-pharmacy',
-            color: '#155dfc',
-            description: 'pharmacies'
-        },
-        {
-            id: 2,
-            name: 'Centres de santé',
-            count: stats.centres_de_sante,
-            icon: 'mdi-hospital-building',
-            color: '#016630',
-            description: 'centres de santé'
-        },
-        {
-            id: 3,
-            name: 'Institutions',
-            count: stats.institutions,
-            icon: 'mdi-building',
-            color: '#9810fa',
-            description: 'institutions publiques'
-        },
-        {
-            id: 4,
-            name: 'Health Tech',
-            count: stats.health_tech,
-            icon: 'mdi-robot',
-            color: '#ff6900',
-            description: 'startups'
-        },
-    ]
-
-    const hexToRgba = (hex, alpha) => {
-        const r = parseInt(hex.slice(1, 3), 16)
-        const g = parseInt(hex.slice(3, 5), 16)
-        const b = parseInt(hex.slice(5, 7), 16)
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`
-    }
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
 </script>
 
 <template>
-    <div class="flex flex-wrap gap-10 mx-auto py-12 px-6 lg:px-12">
-        <div 
-            v-for="entity in entitiesCount " :key="entity.id" 
-            class ="flex-1 flex-col p-7 rounded-xl shadow-xs bg-white dark:bg-gray-800 hover:scale-105 transition ease-in-out duration-500">
-
-            <div class="h-10 w-10 rounded-xl flex items-center justify-center mb-5"
-                :style="{'background-color': hexToRgba(entity.color, 0.1)}">
-                <Icon :name="entity.icon"
-                    :style="{'color': entity.color, 'opacity': 1}"
-                />
-            </div>
-            <div class="flex flex-col gap-1">
-                <p class="font-bold">{{ entity.name }}
-                    
-                </p>
-                <p>{{ entity.count }} {{ entity.description }}</p>
-            </div>
+  <section class="page-container">
+    <div class="flex flex-wrap gap-4">
+      <div
+        v-for="(entity, index) in entitiesCount"
+        :key="entity.id"
+        class="kpi-card animate-fade-in-up"
+        :class="`stagger-${index + 1}`"
+      >
+        <div
+          class="mb-4 flex size-10 items-center justify-center rounded-control"
+          :style="{ backgroundColor: hexToRgba(entity.color, 0.12) }"
+        >
+          <Icon
+            :name="entity.icon"
+            class="size-5"
+            :style="{ color: entity.color }"
+          />
         </div>
+        <p class="text-sm font-medium text-(--color-text-secondary)">
+          {{ entity.name }}
+        </p>
+        <p class="mt-1 text-2xl font-bold tracking-tight text-(--color-text)">
+          {{ entity.count }}
+        </p>
+        <p class="mt-0.5 text-xs text-(--color-text-muted)">
+          {{ entity.description }}
+        </p>
+      </div>
     </div>
+  </section>
 </template>

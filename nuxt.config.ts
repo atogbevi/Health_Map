@@ -13,7 +13,7 @@ export default defineNuxtConfig({
       },
     },
   },
-  modules: ['@nuxt/ui', '@nuxt/icon'],
+  modules: ['@nuxt/ui', '@nuxt/icon', '@nuxt/eslint'],
   css: ['~/assets/main.css'],
   vite: {
     plugins: [
