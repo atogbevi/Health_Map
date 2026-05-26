@@ -38,10 +38,6 @@ importers:
       vue-router:
         specifier: ^5.0.4
         version: 5.0.4(@vue/compiler-sfc@3.5.32)(vue@3.5.32(typescript@6.0.2))
-    devDependencies:
-      '@types/node':
-        specifier: ^22.19.19
-        version: 22.19.19
 
 packages:
 
@@ -5854,6 +5850,7 @@ snapshots:
   '@types/node@22.19.19':
     dependencies:
       undici-types: 6.21.0
+    optional: true
 
   '@types/resolve@1.20.2': {}
 
@@ -8224,7 +8221,8 @@ snapshots:
       magic-string: 0.30.21
       unplugin: 2.3.11
 
-  undici-types@6.21.0: {}
+  undici-types@6.21.0:
+    optional: true
 
   unenv@2.0.0-rc.24:
     dependencies:

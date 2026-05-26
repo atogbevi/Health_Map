@@ -6,6 +6,7 @@ import { Chart } from 'chart.js/auto'
 
 const chartCanvas = ref<HTMLCanvasElement | null>(null)
 let chartInstance: Chart | null = null
+const { tickColor, legendColor } = useChartTheme()
 
 const locationTypes: { id: LocalityType, label: string }[] = [
   { id: 'commune', label: 'Communes' },
@@ -14,11 +15,11 @@ const locationTypes: { id: LocalityType, label: string }[] = [
 ]
 
 const CATEGORY_META = [
-  { key: 'pharmacie' as const, label: 'Pharmacie', color: '#155dfc' },
-  { key: 'hopital' as const, label: 'Hôpital', color: '#016630' },
-  { key: 'clinique' as const, label: 'Clinique', color: '#22c55e' },
-  { key: 'institution' as const, label: 'Institution', color: '#9810fa' },
-  { key: 'startup' as const, label: 'Startup', color: '#ff6900' },
+  { key: 'pharmacie' as const, label: 'Pharmacie', color: '#2563eb' },
+  { key: 'hopital' as const, label: 'Hôpital', color: '#059669' },
+  { key: 'clinique' as const, label: 'Clinique', color: '#10b981' },
+  { key: 'institution' as const, label: 'Institution', color: '#7c3aed' },
+  { key: 'startup' as const, label: 'Startup', color: '#ea580c' },
 ].filter(item => (KNOWN_CATEGORIES as readonly string[]).includes(item.key))
 
 const selectedType = ref<LocalityType>('commune')
@@ -52,6 +53,61 @@ function buildChartData(localities: LocalityStats[]) {
   }
 }
 
+function buildOptions() {
+  return {
+    indexAxis: 'y' as const,
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+      padding: { top: 8, right: 16, bottom: 8, left: 8 },
+    },
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          boxWidth: 10,
+          boxHeight: 10,
+          padding: 20,
+          color: legendColor.value,
+          font: { size: 12, family: 'Plus Jakarta Sans' },
+        },
+      },
+      tooltip: {
+        mode: 'index' as const,
+        intersect: false,
+        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+        titleFont: { family: 'Plus Jakarta Sans', size: 13 },
+        bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
+        padding: 12,
+        cornerRadius: 8,
+      },
+    },
+    scales: {
+      x: {
+        stacked: true,
+        beginAtZero: true,
+        grid: { display: false },
+        border: { display: false },
+        ticks: {
+          precision: 0,
+          color: tickColor.value,
+          font: { size: 11, family: 'Plus Jakarta Sans' },
+        },
+      },
+      y: {
+        stacked: true,
+        grid: { display: false },
+        border: { display: false },
+        ticks: {
+          color: tickColor.value,
+          font: { size: 12, weight: 'bold' as const, family: 'Plus Jakarta Sans' },
+          padding: 10,
+        },
+      },
+    },
+  }
+}
+
 function renderChart(localities: LocalityStats[]) {
   if (!chartCanvas.value || !localities.length) return
 
@@ -60,43 +116,7 @@ function renderChart(localities: LocalityStats[]) {
   chartInstance = new Chart(chartCanvas.value, {
     type: 'bar',
     data: buildChartData(localities) as Chart['data'],
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      layout: {
-        padding: { top: 8, right: 16, bottom: 8, left: 8 },
-      },
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { boxWidth: 12, boxHeight: 12, padding: 16 },
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-        },
-      },
-      scales: {
-        x: {
-          stacked: true,
-          beginAtZero: true,
-          grid: { display: false },
-          border: { display: false },
-          ticks: { precision: 0 },
-        },
-        y: {
-          stacked: true,
-          grid: { display: false },
-          border: { display: false },
-          ticks: {
-            color: '#374151',
-            font: { size: 13, weight: 'bold' },
-            padding: 10,
-          },
-        },
-      },
-    } as Chart['options'],
+    options: buildOptions() as Chart['options'],
   })
 }
 
@@ -110,6 +130,7 @@ async function tryRenderChart() {
 }
 
 watch([topLocalities, loading, error], tryRenderChart, { immediate: true })
+watch([tickColor, legendColor], tryRenderChart)
 
 onMounted(() => {
   tryRenderChart()
@@ -121,11 +142,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-600 dark:bg-gray-800">
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div class="flex flex-col gap-2">
-        <h2 class="text-2xl font-bold">Top localités</h2>
-        <p class="text-sm text-gray-400">
+  <section class="chart-card">
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <h2 class="text-lg font-semibold tracking-tight text-(--color-text)">
+          Top localités
+        </h2>
+        <p class="mt-1 text-sm text-(--color-text-secondary)">
           Top 5 des localités par nombre total d'entités disponibles.
         </p>
       </div>
@@ -135,10 +158,8 @@ onBeforeUnmount(() => {
           v-for="type in locationTypes"
           :key="type.id"
           type="button"
-          class="rounded-full px-4 py-2 text-sm font-medium transition"
-          :class="selectedType === type.id
-            ? 'bg-(--color-primary) text-white'
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200'"
+          class="chip"
+          :class="selectedType === type.id ? 'chip-active' : 'chip-default'"
           @click="selectedType = type.id"
         >
           {{ type.label }}
@@ -146,37 +167,50 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <p v-if="error" class="text-sm text-red-600">Erreur : {{ error.message }}</p>
-
-    <p
-      v-else-if="!loading && !topLocalities?.length"
-      class="rounded-xl border border-dashed border-gray-200 py-12 text-center text-sm text-gray-400 dark:border-gray-600"
-    >
-      Aucune donnée disponible pour ce type de localité.
+    <p v-if="error" class="text-sm text-(--color-danger)">
+      Erreur : {{ error.message }}
     </p>
 
-    <!-- Canvas toujours monté : Chart.js a besoin du DOM au moment de l'init -->
+    <div
+      v-else-if="!loading && !topLocalities?.length"
+      class="empty-state py-14"
+    >
+      <span class="empty-state-icon">
+        <Icon name="mdi:chart-box-outline" class="size-5" />
+      </span>
+      <p class="text-sm font-medium text-(--color-text)">Aucune donnée disponible</p>
+      <p class="text-xs text-(--color-text-muted)">
+        Essayez un autre type de localité.
+      </p>
+    </div>
+
     <div v-else class="relative h-96">
       <div
         v-if="loading"
-        class="absolute inset-0 z-10 flex items-center justify-center bg-white/80 text-sm text-gray-400 dark:bg-gray-800/80"
+        class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-control bg-(--color-surface)/90 backdrop-blur-sm"
       >
-        Chargement…
+        <div class="skeleton size-8 rounded-full" />
+        <p class="text-sm text-(--color-text-muted)">Chargement des données…</p>
       </div>
       <canvas ref="chartCanvas" class="size-full" />
     </div>
 
-    <ul v-if="topLocalities?.length && !loading" class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <ul
+      v-if="topLocalities?.length && !loading"
+      class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5"
+    >
       <li
         v-for="(locality, index) in topLocalities"
         :key="locality.name"
-        class="rounded-xl bg-gray-50 p-4 dark:bg-gray-900"
+        class="card-muted p-4 transition hover:border-(--color-border-strong)"
       >
-        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">
-          #{{ index + 1 }}
+        <p class="label-overline">#{{ index + 1 }}</p>
+        <p class="mt-1 font-semibold capitalize text-(--color-text)">
+          {{ formatLabel(locality.name) }}
         </p>
-        <p class="font-semibold capitalize">{{ formatLabel(locality.name) }}</p>
-        <p class="mt-1 text-sm text-gray-500">{{ locality.total }} entités</p>
+        <p class="mt-1 text-sm text-(--color-text-muted)">
+          {{ locality.total }} entités
+        </p>
       </li>
     </ul>
   </section>

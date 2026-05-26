@@ -1,21 +1,17 @@
 <script setup lang="ts">
-import type { Entity } from '~~/shared/types/Entity'
 import { ref, computed, watch, onMounted } from 'vue'
-import { createClient } from '@supabase/supabase-js'
 
-
-const config = useRuntimeConfig()
-const supabase = createClient(
-  config.public.supabaseUrl,
-  config.public.supabaseKey,
-)
-
-const entities = ref<Entity[]>([])
-const loading = ref(true)
-const error = ref<string | null>(null)
+const {
+  entities,
+  loading,
+  error,
+  activeFilterCount,
+  fetchEntities,
+} = useEntityFilters()
 
 const currentPage = ref(1)
-const PAGE_SIZE = 15
+const PAGE_SIZE = 9
+
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(entities.value.length / PAGE_SIZE)),
 )
@@ -69,114 +65,140 @@ function goToPage(page: number) {
   currentPage.value = page
 }
 
-async function getEntities() {
-  loading.value = true
-  error.value = null
-  const { data, error: supabaseError } = await supabase.from('entities').select('*')
-  if (supabaseError) {
-    error.value = supabaseError.message
-    console.error('[entities]', supabaseError)
-    entities.value = []
-  } else {
-    entities.value = data ?? []
-  }
-  loading.value = false
-}
-
 onMounted(() => {
-  getEntities()
+  fetchEntities()
 })
 </script>
 
 <template>
-  <section class="flex flex-col py-12 px-6 lg:px-12">
-    <div class="flex flex-col gap-2 mb-28">
-      <h2 class="text-2xl font-bold">Annuaire de recherche</h2>
-      <p class="text-lg text-gray-400">
-        Filtrez et trouvez des prestataires spécifiques dans notre réseau.
-      </p>
-    </div>
+  <section class="page-section">
+    <div class="page-container">
+      <header class="page-header">
+        <h2 class="page-title">Annuaire de recherche</h2>
+        <p class="page-subtitle">
+          Filtrez et trouvez des prestataires spécifiques dans notre réseau.
+          <span v-if="activeFilterCount" class="text-(--color-primary)">
+            · {{ activeFilterCount }} filtre(s) actif(s)
+          </span>
+        </p>
+      </header>
 
-    <div class="flex flex-col gap-10 lg:flex-row justify-between">
-      <Filters />
+      <div class="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
+        <Filters />
 
-      <div class="flex flex-col gap-8 md:w-4/5">
-        <p v-if="loading" class="text-sm text-gray-400">Chargement…</p>
-        <p v-else-if="error" class="text-sm text-red-600">Erreur : {{ error }}</p>
-
-        <template v-else>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-10 lg:grid-cols-3">
-            <EntityCard
-              v-for="entity in paginatedEntities"
-              :key="entity.id"
-              :id="entity.id"
-              :nom="entity.nom"
-              :categorie="entity.categorie"
-              :description="entity.description"
-              :canton="entity.canton"
-              :jours_ouverture="entity.jours_ouverture"
-            />
+        <div class="min-w-0 flex-1 flex flex-col gap-8">
+          <div v-if="loading" class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div
+              v-for="n in 6"
+              :key="n"
+              class="card flex flex-col gap-4 p-5"
+            >
+              <div class="skeleton h-10 w-10 rounded-control" />
+              <div class="skeleton h-3 w-20" />
+              <div class="skeleton h-5 w-3/4" />
+              <div class="skeleton h-4 w-full" />
+              <div class="skeleton h-4 w-2/3" />
+            </div>
           </div>
 
-          <nav
-            v-if="totalPages > 1"
-            class="flex items-center justify-center gap-3"
-            aria-label="Pagination"
+          <div
+            v-else-if="error"
+            class="empty-state border-(--color-danger)/30 bg-(--color-danger-muted)"
           >
-            <button
-              type="button"
-              class="flex size-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-              :disabled="currentPage === 1"
-              aria-label="Page précédente"
-              @click="goToPage(currentPage - 1)"
-            >
-              <Icon name="mdi:chevron-left" class="size-5" />
-            </button>
+            <span class="empty-state-icon bg-(--color-danger-muted) text-(--color-danger)">
+              <Icon name="mdi:alert-circle-outline" class="size-5" />
+            </span>
+            <p class="font-medium text-(--color-text)">Impossible de charger les entités</p>
+            <p class="text-sm text-(--color-text-secondary)">{{ error }}</p>
+          </div>
 
-            <div class="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1.5 dark:bg-gray-700">
-              <template
-                v-for="(item, index) in visiblePages"
-                :key="item === 'ellipsis' ? `ellipsis-${index}` : item"
-              >
-                <span
-                  v-if="item === 'ellipsis'"
-                  class="px-2 text-sm font-medium text-gray-500 select-none"
-                  aria-hidden="true"
-                >…</span>
-                <button
-                  v-else
-                  type="button"
-                  class="flex size-9 items-center justify-center rounded-lg text-sm font-medium transition"
-                  :class="item === currentPage
-                    ? 'bg-(--color-primary) text-white shadow-md shadow-(--color-primary)/30'
-                    : 'text-gray-600 hover:bg-blue-100 dark:text-gray-300 dark:hover:bg-blue-900/40'"
-                  :aria-current="item === currentPage ? 'page' : undefined"
-                  @click="goToPage(item)"
-                >
-                  {{ item }}
-                </button>
-              </template>
+          <div
+            v-else-if="!paginatedEntities.length"
+            class="empty-state"
+          >
+            <span class="empty-state-icon">
+              <Icon name="mdi:folder-search-outline" class="size-5" />
+            </span>
+            <p class="font-medium text-(--color-text)">Aucune entité trouvée</p>
+            <p class="text-sm text-(--color-text-secondary)">
+              Ajustez vos filtres ou réinitialisez la recherche.
+            </p>
+          </div>
+
+          <template v-else>
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <EntityCard
+                v-for="entity in paginatedEntities"
+                :key="entity.id"
+                :id="entity.id"
+                :nom="entity.nom"
+                :categorie="entity.categorie"
+                :description="entity.description"
+                :canton="entity.canton"
+                :jours_ouverture="entity.jours_ouverture"
+              />
             </div>
 
-            <button
-              type="button"
-              class="flex size-10 shrink-0 items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40"
-              :class="currentPage === totalPages
-                ? 'bg-gray-100 text-gray-400 dark:bg-gray-700'
-                : 'bg-(--color-primary) text-white shadow-md shadow-(--color-primary)/30 hover:opacity-90'"
-              :disabled="currentPage === totalPages"
-              aria-label="Page suivante"
-              @click="goToPage(currentPage + 1)"
+            <nav
+              v-if="totalPages > 1"
+              class="flex flex-col items-center gap-4"
+              aria-label="Pagination"
             >
-              <Icon name="mdi:chevron-right" class="size-5" />
-            </button>
-          </nav>
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  class="btn btn-secondary flex size-9 items-center justify-center p-0"
+                  :disabled="currentPage === 1"
+                  aria-label="Page précédente"
+                  @click="goToPage(currentPage - 1)"
+                >
+                  <Icon name="mdi:chevron-left" class="size-5" />
+                </button>
 
-          <p class="text-center text-sm text-gray-400">
-            Page {{ currentPage }} sur {{ totalPages }}
-            · {{ entities.length }} entités
-          </p>
-        </template>
+                <div class="flex items-center gap-1 rounded-control border border-(--color-border) bg-(--color-surface) p-1 shadow-soft">
+                  <template
+                    v-for="(item, index) in visiblePages"
+                    :key="item === 'ellipsis' ? `ellipsis-${index}` : item"
+                  >
+                    <span
+                      v-if="item === 'ellipsis'"
+                      class="px-2 text-sm font-medium text-(--color-text-muted) select-none"
+                      aria-hidden="true"
+                    >…</span>
+                    <button
+                      v-else
+                      type="button"
+                      class="flex size-8 items-center justify-center rounded-[0.4rem] text-sm font-medium transition"
+                      :class="item === currentPage
+                        ? 'bg-(--color-primary) text-white shadow-sm'
+                        : 'text-(--color-text-secondary) hover:bg-(--color-surface-muted)'"
+                      :aria-current="item === currentPage ? 'page' : undefined"
+                      @click="goToPage(item)"
+                    >
+                      {{ item }}
+                    </button>
+                  </template>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn flex size-9 items-center justify-center p-0"
+                  :class="currentPage === totalPages ? 'btn-secondary' : 'btn-primary'"
+                  :disabled="currentPage === totalPages"
+                  aria-label="Page suivante"
+                  @click="goToPage(currentPage + 1)"
+                >
+                  <Icon name="mdi:chevron-right" class="size-5" />
+                </button>
+              </div>
+
+              <p class="text-sm text-(--color-text-muted)">
+                Page {{ currentPage }} sur {{ totalPages }}
+                · {{ entities.length }} entité(s)
+              </p>
+            </nav>
+          </template>
+        </div>
       </div>
     </div>
   </section>
