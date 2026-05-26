@@ -129,8 +129,8 @@ onMounted(() => {
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               <EntityCard
                 v-for="entity in paginatedEntities"
-                :key="entity.id"
                 :id="entity.id"
+                :key="entity.id"
                 :nom="entity.nom"
                 :categorie="entity.categorie"
                 :description="entity.description"

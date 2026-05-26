@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { Entity } from '~~/shared/types/Entity'
-
 const route = useRoute()
 const { fetchEntityById } = useEntity()
 
