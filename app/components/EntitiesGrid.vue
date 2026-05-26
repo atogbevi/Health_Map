@@ -1,17 +1,21 @@
 <script setup lang="ts">
+import type { Entity } from '~~/shared/types/Entity'
 import { ref, computed, watch, onMounted } from 'vue'
+import { createClient } from '@supabase/supabase-js'
 
-const {
-  entities,
-  loading,
-  error,
-  activeFilterCount,
-  fetchEntities,
-} = useEntityFilters()
+
+const config = useRuntimeConfig()
+const supabase = createClient(
+  config.public.supabaseUrl,
+  config.public.supabaseKey,
+)
+
+const entities = ref<Entity[]>([])
+const loading = ref(true)
+const error = ref<string | null>(null)
 
 const currentPage = ref(1)
-const PAGE_SIZE = 9
-
+const PAGE_SIZE = 15
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(entities.value.length / PAGE_SIZE)),
 )
@@ -65,8 +69,22 @@ function goToPage(page: number) {
   currentPage.value = page
 }
 
+async function getEntities() {
+  loading.value = true
+  error.value = null
+  const { data, error: supabaseError } = await supabase.from('entities').select('*')
+  if (supabaseError) {
+    error.value = supabaseError.message
+    console.error('[entities]', supabaseError)
+    entities.value = []
+  } else {
+    entities.value = data ?? []
+  }
+  loading.value = false
+}
+
 onMounted(() => {
-  fetchEntities()
+  getEntities()
 })
 </script>
 
@@ -75,29 +93,19 @@ onMounted(() => {
     <div class="flex flex-col gap-2 mb-28">
       <h2 class="text-2xl font-bold">Annuaire de recherche</h2>
       <p class="text-lg text-gray-400">
-        Filtrez et trouvez des entités spécifiques dans notre annuaire.
-        <span v-if="activeFilterCount" class="text-(--color-primary)">
-          · {{ activeFilterCount }} filtre(s) actif(s)
-        </span>
+        Filtrez et trouvez des prestataires spécifiques dans notre réseau.
       </p>
     </div>
 
-    <div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-8">
+    <div class="flex flex-col gap-10 lg:flex-row justify-between">
       <Filters />
 
-      <div class="flex min-w-0 flex-1 flex-col gap-8">
+      <div class="flex flex-col gap-8 md:w-4/5">
         <p v-if="loading" class="text-sm text-gray-400">Chargement…</p>
         <p v-else-if="error" class="text-sm text-red-600">Erreur : {{ error }}</p>
 
         <template v-else>
-          <div
-            v-if="!paginatedEntities.length"
-            class="rounded-xl border border-dashed border-gray-200 py-16 text-center text-sm text-gray-400 dark:border-gray-600"
-          >
-            Aucun résultat pour ces filtres.
-          </div>
-
-          <div v-else class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-10 lg:grid-cols-3">
             <EntityCard
               v-for="entity in paginatedEntities"
               :key="entity.id"
@@ -166,7 +174,7 @@ onMounted(() => {
 
           <p class="text-center text-sm text-gray-400">
             Page {{ currentPage }} sur {{ totalPages }}
-            · {{ entities.length }} entité(s)
+            · {{ entities.length }} entités
           </p>
         </template>
       </div>
