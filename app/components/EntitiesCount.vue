@@ -44,6 +44,14 @@ const entitiesCount = [
     color: '#ea580c',
     description: 'startups',
   },
+  {
+    id: 6,
+    name: 'Laboratoires',
+    count: stats.laboratoires,
+    icon: 'mdi:flask-outline',
+    color: '#f0b100',
+    description: 'laboratoires',
+  },
 ]
 
 function hexToRgba(hex, alpha) {
@@ -56,7 +64,7 @@ function hexToRgba(hex, alpha) {
 
 <template>
   <section class="page-container">
-    <div class="flex flex-wrap gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
       <div
         v-for="(entity, index) in entitiesCount"
         :key="entity.id"

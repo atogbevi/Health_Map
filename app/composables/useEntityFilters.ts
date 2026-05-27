@@ -16,6 +16,7 @@ export const KNOWN_CATEGORIES = [
   'clinique',
   'institution',
   'startup',
+  'laboratoire',
 ] as const
 
 function emptyFilters(): EntityFilters {

@@ -9,7 +9,7 @@ function createSupabaseClient() {
   )
 }
 
-const CATEGORY_KEYS = ['pharmacie', 'hopital', 'clinique', 'institution', 'startup'] as const
+const CATEGORY_KEYS = ['pharmacie', 'hopital', 'clinique', 'institution', 'startup', 'laboratoire'] as const
 type CategoryKey = (typeof CATEGORY_KEYS)[number]
 
 function emptyLocalityStats(name: string): LocalityStats {
@@ -21,6 +21,7 @@ function emptyLocalityStats(name: string): LocalityStats {
     clinique: 0,
     institution: 0,
     startup: 0,
+    laboratoire: 0,
   }
 }
 
@@ -37,6 +38,7 @@ function normalizeCategory(raw: string): CategoryKey | null {
   if (value === 'institutions') return 'institution'
   if (value === 'startups' || value === 'health tech') return 'startup'
   if (value === 'pharmacies') return 'pharmacie'
+  if (value === 'laboratoires' || value === 'labo') return 'laboratoire'
 
   return null
 }
@@ -100,28 +102,36 @@ export async function getTopLocalities(
 }
 
 export async function getStats(): Promise<Stats> {
-    const supabase = createSupabaseClient()
-    const stats: Stats = {
-        pharmacies: 0,
-        centres_de_sante: 0,
-        institutions: 0,
-        health_tech: 0,
-        total: 0,
-    }
+  const supabase = createSupabaseClient()
+  const stats: Stats = {
+    pharmacies: 0,
+    hopitaux: 0,
+    cliniques: 0,
+    centres_de_sante: 0,
+    institutions: 0,
+    health_tech: 0,
+    laboratoires: 0,
+    total: 0,
+  }
 
-    const [pharmacies, centres_de_sante, institutions, healthTech, total] = await Promise.all([
-        supabase.from('entities').select('*', { count: 'exact', head: true }).eq('categorie', 'pharmacie'),
-        supabase.from('entities').select('*', { count: 'exact', head: true }).in('categorie', ['clinique', 'hopital']),
-        supabase.from('entities').select('*', { count: 'exact', head: true }).eq('categorie', 'institution'),
-        supabase.from('entities').select('*', { count: 'exact', head: true }).eq('categorie', 'startup'),
-        supabase.from('entities').select('*', { count: 'exact', head: true }),
-    ])
+  const [pharmacies, hopitaux, cliniques, institutions, healthTech, laboratoires, total] = await Promise.all([
+    supabase.from('entities').select('*', { count: 'exact', head: true }).eq('categorie', 'pharmacie'),
+    supabase.from('entities').select('*', { count: 'exact', head: true }).eq('categorie', 'hopital'),
+    supabase.from('entities').select('*', { count: 'exact', head: true }).eq('categorie', 'clinique'),
+    supabase.from('entities').select('*', { count: 'exact', head: true }).eq('categorie', 'institution'),
+    supabase.from('entities').select('*', { count: 'exact', head: true }).eq('categorie', 'startup'),
+    supabase.from('entities').select('*', { count: 'exact', head: true }).eq('categorie', 'laboratoire'),
+    supabase.from('entities').select('*', { count: 'exact', head: true }),
+  ])
 
-    stats.pharmacies = pharmacies.count ?? 0
-    stats.centres_de_sante = centres_de_sante.count ?? 0
-    stats.institutions = institutions.count ?? 0
-    stats.health_tech = healthTech.count ?? 0
-    stats.total = total.count ?? 0
+  stats.pharmacies = pharmacies.count ?? 0
+  stats.hopitaux = hopitaux.count ?? 0
+  stats.cliniques = cliniques.count ?? 0
+  stats.centres_de_sante = stats.hopitaux + stats.cliniques
+  stats.institutions = institutions.count ?? 0
+  stats.health_tech = healthTech.count ?? 0
+  stats.laboratoires = laboratoires.count ?? 0
+  stats.total = total.count ?? 0
 
-    return stats
+  return stats
 }
