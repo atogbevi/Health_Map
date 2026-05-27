@@ -7,17 +7,20 @@ let chartInstance: Chart | null = null
 const stats = await getStats()
 const { tickColor, legendColor } = useChartTheme()
 
-const CHART_COLORS = ['#2563eb', '#059669', '#7c3aed', '#ea580c', '#ca8a04']
+const CHART_COLORS = ['#2563eb', '#f0b100', '#059669', '#7c3aed', '#ea580c', '#ca8a04']
 
 const data = {
-  labels: ['Pharmacie', 'Hôpital', 'Clinique', 'Institution', 'Startup'],
+  labels: ['Pharmacie', 'Laboratoire', 'Hôpital', 'Clinique', 'Institution', 'Startup'],
   datasets: [{
     label: "Nombre d'entités",
     data: [
       stats.pharmacies,
-      stats.centres_de_sante,
+      stats.laboratoires,
+      stats.hopitaux,
+      stats.cliniques,
       stats.institutions,
       stats.health_tech,
+      stats.laboratoires,
     ],
     backgroundColor: CHART_COLORS,
     borderRadius: 8,
@@ -116,7 +119,7 @@ onBeforeUnmount(() => {
         Répartition des structures enregistrées par type.
       </p>
     </header>
-    <div class="h-80">
+    <div class="h-96">
       <canvas ref="chartCanvas" />
     </div>
   </section>

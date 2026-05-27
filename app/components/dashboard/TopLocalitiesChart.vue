@@ -16,6 +16,7 @@ const locationTypes: { id: LocalityType, label: string }[] = [
 
 const CATEGORY_META = [
   { key: 'pharmacie' as const, label: 'Pharmacie', color: '#2563eb' },
+  { key: 'laboratoire' as const, label: 'Laboratoire', color: '#f0b100' },
   { key: 'hopital' as const, label: 'Hôpital', color: '#059669' },
   { key: 'clinique' as const, label: 'Clinique', color: '#10b981' },
   { key: 'institution' as const, label: 'Institution', color: '#7c3aed' },

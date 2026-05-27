@@ -38,7 +38,7 @@
           </div>
           <div>
             <dt class="label-overline">Types</dt>
-            <dd class="mt-1 text-lg font-semibold text-(--color-text)">5+ catégories</dd>
+            <dd class="mt-1 text-lg font-semibold text-(--color-text)">6+ catégories</dd>
           </div>
         </dl>
       </div>

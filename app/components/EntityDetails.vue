@@ -25,6 +25,7 @@ const categoryIcon: Record<string, string> = {
   clinique: 'mdi:hospital-building',
   institution: 'mdi:office-building',
   startup: 'mdi:robot',
+  laboratoire: 'mdi:flask',
 }
 </script>
 

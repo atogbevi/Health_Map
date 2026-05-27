@@ -1,8 +1,11 @@
 export interface Stats {
     pharmacies: number
+    hopitaux: number
+    cliniques: number
     centres_de_sante: number
     institutions: number
     health_tech: number
+    laboratoires: number
     total: number
 }
 
@@ -16,4 +19,5 @@ export interface LocalityStats {
     clinique: number
     institution: number
     startup: number
+    laboratoire: number
 }

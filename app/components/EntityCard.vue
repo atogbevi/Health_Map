@@ -14,6 +14,7 @@ const categoryIcon: Record<string, { icon: string, accent: string }> = {
   clinique: { icon: 'mdi:hospital-building', accent: 'text-emerald-600 dark:text-emerald-400' },
   institution: { icon: 'mdi:office-building', accent: 'text-violet-600 dark:text-violet-400' },
   startup: { icon: 'mdi:robot', accent: 'text-amber-600 dark:text-amber-400' },
+  laboratoire: { icon: 'mdi:flask', accent: 'text-yellow-600 dark:text-yellow-500' },
 }
 
 const iconMeta = computed(() => {
@@ -51,7 +52,7 @@ const iconMeta = computed(() => {
       >
         {{ props.description }}
       </p>
-      <div class="mt-1 flex items-center gap-1.5 text-sm text-(--color-text-muted)">
+      <div v-if="props.canton" class="mt-1 flex items-center gap-1.5 text-sm text-(--color-text-muted)">
         <Icon name="mdi:map-marker-outline" class="size-4 shrink-0" />
         <span class="capitalize">{{ props.canton }}</span>
       </div>
